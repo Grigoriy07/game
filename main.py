@@ -103,3 +103,18 @@ def draw_text(x, y, text, surface, size, color):
     f_1 = pygame.font.Font(None, size)
     text_s = f_1.render(str(text), False, color)
     surface.blit(text_s, (x, y))
+
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, image):
+        super().__init__()
+        self.image = image
+        self.image.fill(YELLOW)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.speedy = 10
+
+    def update(self):
+        if self.rect.y < -0:
+            self.kill()
+        self.rect.y -= 10
