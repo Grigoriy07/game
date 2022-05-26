@@ -118,3 +118,16 @@ class Bullet(pygame.sprite.Sprite):
         if self.rect.y < -0:
             self.kill()
         self.rect.y -= 10
+
+class Improvement(pygame.sprite.Sprite):
+    def __init__(self, x=False, y=False):
+        super().__init__()
+        self.speedy = 2
+
+    def update(self):
+        self.rect.y += self.speedy
+        if self.rect.y > HEIGHT:
+            self.kill()
+
+    def recording_set(self):
+        return [self.rect.x, self.rect.y, self.type]
