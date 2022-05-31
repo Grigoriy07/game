@@ -131,3 +131,21 @@ class Improvement(pygame.sprite.Sprite):
 
     def recording_set(self):
         return [self.rect.x, self.rect.y, self.type]
+
+    class Lazer(Improvement):
+        def __init__(self, x=False, y=False):
+            super().__init__(x, y)
+            self.type = 'lazer'
+            self.image = lazer_image
+            self.rect = self.image.get_rect()
+            if x:
+                self.rect.x = x
+                self.rect.y = y
+            else:
+                self.rect.x = random.randrange(WIDTH - self.rect.width)
+                self.rect.y = random.randrange(-50, -40)
+
+        def baf(self, other):
+            other.recharge = 0
+            other.image_bullet = pygame.Surface((10, 560))
+            other.bullet_y = 0
