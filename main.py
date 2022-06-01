@@ -162,3 +162,22 @@ class Shield(Improvement):
                     else:
                         self.rect.x = random.randrange(WIDTH - self.rect.width)
                         self.rect.y = random.randrange(-50, -40)
+class Mob(pygame.sprite.Sprite):
+    def __init__(self, image):
+        super().__init__()
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(WIDTH - self.rect.width)
+        self.rect.y = random.randrange(-50, -40)
+        self.speedy = random.randrange(1, 4)
+        self.ticks = []
+        self.data = [self.rect.x, self.rect.y, self.speedy, self.image]
+
+    def update(self):
+        self.rect.y += self.speedy
+        if self.rect.top > HEIGHT:
+            self.kill()
+            make_new_mob()
+
+    def recording_set(self):
+        return self.data
