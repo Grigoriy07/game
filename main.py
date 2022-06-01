@@ -181,3 +181,28 @@ class Mob(pygame.sprite.Sprite):
 
     def recording_set(self):
         return self.data
+def make_new_mob():
+    image_key = random.randrange(0, 2)
+    m = Mob(mobs_images_and_shield[image_key])
+    all_sprites.add(m)
+    mobs.add(m)
+    if recording_start:
+        recording_data['mobs'].append(m.recording_set())
+class Button(pygame.sprite.Sprite):
+    def __init__(self, x, y, image):
+        super().__init__()
+        self.x = x
+        self.y = y
+        self.image = image
+        size = self.image.get_rect().size
+        self.height = size[1]
+        self.width = size[0]
+        self.rect = pygame.Rect(x, y, self.width, self.height)
+
+    def pressed(self, mouse):
+        if self.x <= mouse[0] <= self.x + self.width and self.y <= mouse[1] <= self.y + self.height:
+            return True
+        return False
+
+    def change_image(self, image):
+        self.image = image
