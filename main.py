@@ -206,3 +206,19 @@ class Button(pygame.sprite.Sprite):
 
     def change_image(self, image):
         self.image = image
+class Mob_recording(pygame.sprite.Sprite):
+    def __init__(self, x, y, speedy, image):
+        super().__init__()
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.list_speedy = speedy
+        self.rect.x = x
+        self.rect.y = y
+        self.speedy = speedy
+
+    def update(self):
+        self.rect.y += self.speedy
+        if self.rect.top > HEIGHT:
+            self.kill()
