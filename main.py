@@ -222,3 +222,102 @@ class Mob_recording(pygame.sprite.Sprite):
         self.rect.y += self.speedy
         if self.rect.top > HEIGHT:
             self.kill()
+score = 0
+all_sprites = pygame.sprite.Group()
+mobs = pygame.sprite.Group()
+bullets = pygame.sprite.Group()
+improvements = pygame.sprite.Group()
+start_window_sprites = pygame.sprite.Group()
+game_over_sprites = pygame.sprite.Group()
+player_sprite = pygame.sprite.Group()
+
+lazer_event = pygame.USEREVENT + 1
+lazer_time_event = pygame.USEREVENT + 2
+
+shield_event = pygame.USEREVENT + 3
+shield_time_event = pygame.USEREVENT + 4
+
+pygame.time.set_timer(lazer_event, random.randrange(1500, 30000))
+pygame.time.set_timer(shield_event, random.randrange(1000, 20000))
+
+running = True
+start_window = True
+game_running = False
+recording_go = False
+recording_start = False
+game_over = False
+
+player = Player()
+all_sprites.add(player)
+
+start_button = Button(100, 100, start_game_button_image)
+recording_start_button = Button(250, 100, start_game_with_recording_button_image)
+restart_button = Button(180, 300, start_game_button_image)
+watch_repeat_button = Button(180, 345, repeat_button_image)
+exit_button = Button(120, 300, exit_button)
+right_click_button = Button(250, 160, right_click)
+left_click_button = Button(160, 160, left_click)
+
+
+start_window_sprites.add(start_button)
+start_window_sprites.add(recording_start_button)
+start_window_sprites.add(right_click_button)
+start_window_sprites.add(left_click_button)
+game_over_sprites.add(restart_button)
+game_over_sprites.add(exit_button)
+player_sprite.add(player)
+text = ''
+
+right = False
+left = False
+shoot = False
+
+while running:
+    clock.tick(FPS)
+    if start_window:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if start_button.pressed(event.pos):
+                    start_window = False
+                    game_running = True
+                    for i in range(4):
+                        make_new_mob()
+                elif recording_start_button.pressed(event.pos):
+                    start_window = False
+                    game_running = True
+                    recording_start = True
+                    recording_data = {'improvents': [],
+                              'mobs': []}
+                    recording_events = []
+                    for i in range(4):
+                        make_new_mob()
+                    game_over_sprites.add(watch_repeat_button)
+                elif right_click_button.pressed(event.pos):
+                    image_index += 1
+                    if image_index == 3:
+                        image_index = 0
+                    player.kill()
+                    player_image = playrs_images[image_index]
+
+                    player = Player()
+                    all_sprites.add(player)
+                    player_sprite.add(player)
+                elif left_click_button.pressed(event.pos):
+                    image_index -= 1
+                    if image_index == -1:
+                        image_index = 2
+                    player.kill()
+                    player_image = playrs_images[image_index]
+
+                    player = Player()
+                    all_sprites.add(player)
+                    player_sprite.add(player)
+
+        start_window_surface.fill(WHITE)
+        start_window_surface.blit(player_image, (200, 160))
+        start_window_sprites.update()
+        start_window_sprites.draw(start_window_surface)
+        screen.blit(start_window_surface, (0, 0))
+        pygame.display.flip()
