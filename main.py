@@ -368,3 +368,57 @@ while running:
                 player.recharge = 200
                 player.image_bullet = pygame.Surface((2, 10))
                 player.bullet_y = player.rect.y
+    if game_over:
+        all_sprites.empty()
+        mobs.empty()
+        improvements.empty()
+        bullets.empty()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if restart_button.pressed(event.pos):
+                    for i in range(4):
+                        make_new_mob()
+                    player = Player()
+                    all_sprites.add(player)
+                    player_sprite.add(player)
+                    game_over = False
+                    game_running = True
+                    right = False
+                    left = False
+                    shoot = False
+                    score = 0
+                    screen.fill(BLACK)
+                    pygame.time.set_timer(lazer_event, random.randrange(1500, 30000))
+                    pygame.time.set_timer(shield_event, random.randrange(1000, 20000))
+                    recording_data = {'improvents': [],
+                                      'mobs': []}
+                    recording_events = []
+                elif exit_button.pressed(event.pos):
+                    player = Player()
+                    all_sprites.add(player)
+                    player_sprite.add(player)
+                    game_over = False
+                    start_window = True
+                    right = False
+                    left = False
+                    shoot = False
+                    score = 0
+                    screen.fill(BLACK)
+                    pygame.time.set_timer(lazer_event, random.randrange(1500, 30000))
+                    pygame.time.set_timer(shield_event, random.randrange(1000, 20000))
+                    recording_data = {'improvents': [],
+                                      'mobs': []}
+                    recording_events = []
+                if recording_start:
+                    if watch_repeat_button.pressed(event.pos):
+                        recording_go = True
+                        screen.fill(BLACK)
+
+        game_over_surface.fill(GREY)
+        draw_text(50, 0, 'ВАШ РЕЗУЛЬТАТ', game_over_surface, 40, BLACK)
+        draw_text(180 - 30 - len(str(score)) + 1, 40, score, game_over_surface, 60, BLACK)
+        screen.blit(game_over_surface, (60, 180))
+        game_over_sprites.draw(screen)
+        pygame.display.flip()
