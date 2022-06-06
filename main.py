@@ -321,3 +321,50 @@ while running:
         start_window_sprites.draw(start_window_surface)
         screen.blit(start_window_surface, (0, 0))
         pygame.display.flip()
+    if game_running:
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RIGHT:
+                    right = True
+                    left = False
+                if event.key == pygame.K_LEFT:
+                    left = True
+                    right = False
+                if event.key == pygame.K_SPACE:
+                    shoot = True
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_RIGHT:
+                    right = False
+                if event.key == pygame.K_LEFT:
+                    left = False
+                if event.key == pygame.K_SPACE:
+                    shoot = False
+
+            if event.type == lazer_event:
+                imp = Lazer()
+                improvements.add(imp)
+                all_sprites.add(imp)
+                pygame.time.set_timer(lazer_event, random.randrange(10000, 30000))
+                pygame.time.set_timer(lazer_time_event, 4000)
+                if recording_start:
+                    recording_data['improvents'].append(imp.recording_set())
+
+            if event.type == shield_event:
+                imp = Shield()
+                improvements.add(imp)
+                all_sprites.add(imp)
+                pygame.time.set_timer(shield_event, random.randrange(8000, 23000))
+                pygame.time.set_timer(shield_time_event, 6000)
+                if recording_start:
+                    recording_data['improvents'].append(imp.recording_set())
+
+            if event.type == shield_time_event:
+                shield_is_active = False
+
+            if event.type == lazer_time_event:
+                player.recharge = 200
+                player.image_bullet = pygame.Surface((2, 10))
+                player.bullet_y = player.rect.y
