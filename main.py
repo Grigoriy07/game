@@ -422,3 +422,42 @@ while running:
         screen.blit(game_over_surface, (60, 180))
         game_over_sprites.draw(screen)
         pygame.display.flip()
+        if recording_start:
+            if events == []:
+                recording_events.append('')
+            else:
+                recording_events.append(events)
+        player.update(left, right, shoot)
+        hits = pygame.sprite.groupcollide(mobs, bullets, True, True)
+        improvement_hits = pygame.sprite.groupcollide(improvements, bullets, True, True)
+        if shield_is_active:
+            player_hit = pygame.sprite.groupcollide(player_sprite, mobs, False, True)
+        else:
+            player_hit = pygame.sprite.groupcollide(player_sprite, mobs, True, True)
+            if player_hit:
+                game_running = False
+                game_over = True
+
+        for i in hits:
+            make_new_mob()
+            score += 1
+
+        for i in player_hit:
+            make_new_mob()
+            score += 1
+
+        for i in improvement_hits:
+            if i.type == 'lazer':
+                i.baf(player)
+            if i.type == 'shield':
+                shield_is_active = True
+
+        screen.fill(BLACK)
+        mobs.update()
+        improvements.update()
+        bullets.update()
+        all_sprites.draw(screen)
+        if shield_is_active:
+            screen.blit(shield_on_player_image, (player.rect.x, player.rect.y))
+        draw_text(220, 0, score, screen, 100, GREEN)
+        pygame.display.flip()
