@@ -461,3 +461,98 @@ while running:
             screen.blit(shield_on_player_image, (player.rect.x, player.rect.y))
         draw_text(220, 0, score, screen, 100, GREEN)
         pygame.display.flip()
+    if recording_go:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        right = False
+        left = False
+        shoot = False
+        shield_is_active_c = False
+
+        player_c = Player()
+
+        mobs_c = pygame.sprite.Group()
+        all_sprites_c = pygame.sprite.Group()
+        bullets_c = pygame.sprite.Group()
+        improvements_c = pygame.sprite.Group()
+        player_sprite_c = pygame.sprite.Group()
+        player_sprite_c.add(player_c)
+
+        improvements_c_make_index = 0
+        mobc_s_index_create = 0
+
+        if len(mobs_c) < 4:
+            k = recording_data['mobs'][mobc_s_index_create]
+            m = Mob_recording(k[0], k[1], k[2], k[3])
+            mobs_c.add(m)
+            all_sprites_c.add(m)
+            mobc_s_index_create += 1
+
+        all_sprites_c.add(player_c)
+        recording_events.append('')
+        for j in (recording_events):
+            if len(j) > 0:
+                event = j[0]
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RIGHT:
+                        right = True
+                        left = False
+                    if event.key == pygame.K_LEFT:
+                        left = True
+                        right = False
+                    if event.key == pygame.K_SPACE:
+                        shoot = True
+                elif event.type == pygame.KEYUP:
+                    if event.key == pygame.K_RIGHT:
+                        right = False
+                    if event.key == pygame.K_LEFT:
+                        left = False
+                    if event.key == pygame.K_SPACE:
+                        shoot = False
+
+                if event.type == lazer_event:
+                    imp = Lazer(recording_data['improvents'][improvements_c_make_index][0],
+                                recording_data['improvents'][improvements_c_make_index][1])
+                    improvements_c.add(imp)
+                    all_sprites_c.add(imp)
+
+                if event.type == shield_event:
+                    imp = Shield(recording_data['improvents'][improvements_c_make_index][0],
+                                 recording_data['improvents'][improvements_c_make_index][1])
+                    improvements_c.add(imp)
+                    all_sprites_c.add(imp)
+
+                if event.type == shield_time_event:
+                    shield_is_active_c = False
+
+                if event.type == lazer_time_event:
+                    player_c.recharge = 200
+                    player_c.image_bullet = pygame.Surface((2, 10))
+                    player_c.bullet_y = player.rect.y
+
+            hits = pygame.sprite.groupcollide(mobs_c, bullets_c, True, True)
+            improvement_hits_c = pygame.sprite.groupcollide(improvements_c, bullets_c, True, True)
+            player_c.update(left, right, shoot)
+
+            for i in improvement_hits_c:
+                if i.type == 'lazer':
+                    i.baf(player_c)
+                if i.type == 'shield':
+                    shield_is_active = True
+
+            if len(mobs_c) < 4:
+                k = recording_data['mobs'][mobc_s_index_create]
+                m = Mob_recording(k[0], k[1], k[2], k[3])
+                mobs_c.add(m)
+                all_sprites_c.add(m)
+                mobc_s_index_create += 1
+
+            screen.fill(BLACK)
+            improvements_c.update()
+            bullets_c.update()
+            mobs_c.update()
+            all_sprites_c.draw(screen)
+            pygame.display.flip()
+        recording_go = False
+pygame.quit()
