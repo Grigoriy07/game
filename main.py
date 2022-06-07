@@ -1,4 +1,5 @@
 import pygame, random, os, sys
+from tkinter.filedialog import askopenfilename
 
 WIDTH = 480
 HEIGHT = 600
@@ -47,6 +48,129 @@ mobs_images_and_shield = [meteor_20_image, meteor_40_image, meteor_70_image]
 
 shield_is_active = False
 recordings = []
+
+
+class Button(pygame.sprite.Sprite):
+    def __init__(self, x, y, image):
+        super().__init__()
+        self.x = x
+        self.y = y
+        self.image = image
+        size = self.image.get_rect().size
+        self.height = size[1]
+        self.width = size[0]
+        self.rect = pygame.Rect(x, y, self.width, self.height)
+
+    def pressed(self, mouse):
+        if self.x <= mouse[0] <= self.x + self.width and self.y <= mouse[1] <= self.y + self.height:
+            return True
+        return False
+
+    def change_image(self, image):
+        self.image = image
+
+
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, image):
+        super().__init__()
+        self.image = image
+        self.image.fill(YELLOW)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.speedy = 10
+
+    def update(self):
+        if self.rect.y < -0:
+            self.kill()
+        self.rect.y -= 10
+
+
+class Improvement(pygame.sprite.Sprite):
+    def __init__(self, x=False, y=False):
+        super().__init__()
+        self.speedy = 2
+
+    def update(self):
+        self.rect.y += self.speedy
+        if self.rect.y > HEIGHT:
+            self.kill()
+
+    def recording_set(self):
+        return [self.rect.x, self.rect.y, self.type]
+
+
+class Lazer(Improvement):
+    def __init__(self, x=False, y=False):
+        super().__init__(x, y)
+        self.type = 'lazer'
+        self.image = lazer_image
+        self.rect = self.image.get_rect()
+        if x:
+            self.rect.x = x
+            self.rect.y = y
+        else:
+            self.rect.x = random.randrange(WIDTH - self.rect.width)
+            self.rect.y = random.randrange(-50, -40)
+
+    def baf(self, other):
+        other.recharge = 0
+        other.image_bullet = pygame.Surface((10, 560))
+        other.bullet_y = 0
+
+
+class Shield(Improvement):
+    def __init__(self, x=False, y=False):
+        super().__init__(x, y)
+        self.type = 'shield'
+        self.image = shield_image
+        self.rect = self.image.get_rect()
+        if x:
+            self.rect.x = x
+            self.rect.y = y
+        else:
+            self.rect.x = random.randrange(WIDTH - self.rect.width)
+            self.rect.y = random.randrange(-50, -40)
+
+
+class Mob(pygame.sprite.Sprite):
+    def __init__(self, image):
+        super().__init__()
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(WIDTH - self.rect.width)
+        self.rect.y = random.randrange(-50, -40)
+        self.speedy = random.randrange(1, 4)
+        self.ticks = []
+        self.data = [self.rect.x, self.rect.y, self.speedy, self.image]
+
+    def update(self):
+        self.rect.y += self.speedy
+        if self.rect.top > HEIGHT:
+            self.kill()
+            make_new_mob()
+
+    def recording_set(self):
+        return self.data
+
+
+class Mob_recording(pygame.sprite.Sprite):
+    def __init__(self, x, y, speedy, image):
+        super().__init__()
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.list_speedy = speedy
+        self.rect.x = x
+        self.rect.y = y
+        self.speedy = speedy
+
+    def update(self):
+        self.rect.y += self.speedy
+        if self.rect.top > HEIGHT:
+            self.kill()
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -104,83 +228,7 @@ def draw_text(x, y, text, surface, size, color):
     text_s = f_1.render(str(text), False, color)
     surface.blit(text_s, (x, y))
 
-class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, image):
-        super().__init__()
-        self.image = image
-        self.image.fill(YELLOW)
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        self.speedy = 10
 
-    def update(self):
-        if self.rect.y < -0:
-            self.kill()
-        self.rect.y -= 10
-
-class Improvement(pygame.sprite.Sprite):
-    def __init__(self, x=False, y=False):
-        super().__init__()
-        self.speedy = 2
-
-    def update(self):
-        self.rect.y += self.speedy
-        if self.rect.y > HEIGHT:
-            self.kill()
-
-    def recording_set(self):
-        return [self.rect.x, self.rect.y, self.type]
-
-class Lazer(Improvement):
-        def __init__(self, x=False, y=False):
-            super().__init__(x, y)
-            self.type = 'lazer'
-            self.image = lazer_image
-            self.rect = self.image.get_rect()
-            if x:
-                self.rect.x = x
-                self.rect.y = y
-            else:
-                self.rect.x = random.randrange(WIDTH - self.rect.width)
-                self.rect.y = random.randrange(-50, -40)
-
-        def baf(self, other):
-            other.recharge = 0
-            other.image_bullet = pygame.Surface((10, 560))
-            other.bullet_y = 0
-
-class Shield(Improvement):
-                def __init__(self, x=False, y=False):
-                    super().__init__(x, y)
-                    self.type = 'shield'
-                    self.image = shield_image
-                    self.rect = self.image.get_rect()
-                    if x:
-                        self.rect.x = x
-                        self.rect.y = y
-                    else:
-                        self.rect.x = random.randrange(WIDTH - self.rect.width)
-                        self.rect.y = random.randrange(-50, -40)
-class Mob(pygame.sprite.Sprite):
-    def __init__(self, image):
-        super().__init__()
-        self.image = image
-        self.rect = self.image.get_rect()
-        self.rect.x = random.randrange(WIDTH - self.rect.width)
-        self.rect.y = random.randrange(-50, -40)
-        self.speedy = random.randrange(1, 4)
-        self.ticks = []
-        self.data = [self.rect.x, self.rect.y, self.speedy, self.image]
-
-    def update(self):
-        self.rect.y += self.speedy
-        if self.rect.top > HEIGHT:
-            self.kill()
-            make_new_mob()
-
-    def recording_set(self):
-        return self.data
 def make_new_mob():
     image_key = random.randrange(0, 2)
     m = Mob(mobs_images_and_shield[image_key])
@@ -188,40 +236,8 @@ def make_new_mob():
     mobs.add(m)
     if recording_start:
         recording_data['mobs'].append(m.recording_set())
-class Button(pygame.sprite.Sprite):
-    def __init__(self, x, y, image):
-        super().__init__()
-        self.x = x
-        self.y = y
-        self.image = image
-        size = self.image.get_rect().size
-        self.height = size[1]
-        self.width = size[0]
-        self.rect = pygame.Rect(x, y, self.width, self.height)
 
-    def pressed(self, mouse):
-        if self.x <= mouse[0] <= self.x + self.width and self.y <= mouse[1] <= self.y + self.height:
-            return True
-        return False
 
-    def change_image(self, image):
-        self.image = image
-class Mob_recording(pygame.sprite.Sprite):
-    def __init__(self, x, y, speedy, image):
-        super().__init__()
-        self.image = image
-        self.rect = self.image.get_rect()
-        self.x = x
-        self.y = y
-        self.list_speedy = speedy
-        self.rect.x = x
-        self.rect.y = y
-        self.speedy = speedy
-
-    def update(self):
-        self.rect.y += self.speedy
-        if self.rect.top > HEIGHT:
-            self.kill()
 score = 0
 all_sprites = pygame.sprite.Group()
 mobs = pygame.sprite.Group()
@@ -321,6 +337,7 @@ while running:
         start_window_sprites.draw(start_window_surface)
         screen.blit(start_window_surface, (0, 0))
         pygame.display.flip()
+
     if game_running:
         events = pygame.event.get()
         for event in events:
@@ -368,6 +385,47 @@ while running:
                 player.recharge = 200
                 player.image_bullet = pygame.Surface((2, 10))
                 player.bullet_y = player.rect.y
+
+        if recording_start:
+            if events == []:
+                recording_events.append('')
+            else:
+                recording_events.append(events)
+        player.update(left, right, shoot)
+        hits = pygame.sprite.groupcollide(mobs, bullets, True, True)
+        improvement_hits = pygame.sprite.groupcollide(improvements, bullets, True, True)
+        if shield_is_active:
+            player_hit = pygame.sprite.groupcollide(player_sprite, mobs, False, True)
+        else:
+            player_hit = pygame.sprite.groupcollide(player_sprite, mobs, True, True)
+            if player_hit:
+                game_running = False
+                game_over = True
+
+        for i in hits:
+            make_new_mob()
+            score += 1
+
+        for i in player_hit:
+            make_new_mob()
+            score += 1
+
+        for i in improvement_hits:
+            if i.type == 'lazer':
+                i.baf(player)
+            if i.type == 'shield':
+                shield_is_active = True
+
+        screen.fill(BLACK)
+        mobs.update()
+        improvements.update()
+        bullets.update()
+        all_sprites.draw(screen)
+        if shield_is_active:
+            screen.blit(shield_on_player_image, (player.rect.x, player.rect.y))
+        draw_text(220, 0, score, screen, 100, GREEN)
+        pygame.display.flip()
+
     if game_over:
         all_sprites.empty()
         mobs.empty()
@@ -422,45 +480,7 @@ while running:
         screen.blit(game_over_surface, (60, 180))
         game_over_sprites.draw(screen)
         pygame.display.flip()
-        if recording_start:
-            if events == []:
-                recording_events.append('')
-            else:
-                recording_events.append(events)
-        player.update(left, right, shoot)
-        hits = pygame.sprite.groupcollide(mobs, bullets, True, True)
-        improvement_hits = pygame.sprite.groupcollide(improvements, bullets, True, True)
-        if shield_is_active:
-            player_hit = pygame.sprite.groupcollide(player_sprite, mobs, False, True)
-        else:
-            player_hit = pygame.sprite.groupcollide(player_sprite, mobs, True, True)
-            if player_hit:
-                game_running = False
-                game_over = True
 
-        for i in hits:
-            make_new_mob()
-            score += 1
-
-        for i in player_hit:
-            make_new_mob()
-            score += 1
-
-        for i in improvement_hits:
-            if i.type == 'lazer':
-                i.baf(player)
-            if i.type == 'shield':
-                shield_is_active = True
-
-        screen.fill(BLACK)
-        mobs.update()
-        improvements.update()
-        bullets.update()
-        all_sprites.draw(screen)
-        if shield_is_active:
-            screen.blit(shield_on_player_image, (player.rect.x, player.rect.y))
-        draw_text(220, 0, score, screen, 100, GREEN)
-        pygame.display.flip()
     if recording_go:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
